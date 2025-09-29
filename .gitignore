@@ -1,0 +1,38 @@
+# Visual Studio / .NET
+.vs/
+bin/
+obj/
+TestResults/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Rider/IDE
+.idea/
+*.sln.iml
+
+# Build artifacts
+publish/
+artifacts/
+
+# OS
+Thumbs.db
+.DS_Store
+
+# NuGet
+*.nupkg
+packages/
+
+# Rider
+.idea/
+
+# Visual Studio Code
+.vscode/
+
+# Logs
+*.log
+
+# Resharper
+_ReSharper*/
+*.[Rr]e[Ss]harper

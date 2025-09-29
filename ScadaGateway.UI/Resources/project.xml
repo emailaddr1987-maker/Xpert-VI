@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ProjectDto xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Name>DefaultProject</Name>
+  <Channels>
+    <ChannelDto>
+      <Id />
+      <Name>Mock (Mock)</Name>
+      <Protocol>Mock</Protocol>
+      <Enabled>true</Enabled>
+      <Devices>
+        <DeviceDto>
+          <Id />
+          <Name>MockDevice</Name>
+          <Points>
+            <PointDto>
+              <Id />
+              <Name>RandomBool</Name>
+              <DataType>Bool</DataType>
+              <Meta />
+            </PointDto>
+            <PointDto>
+              <Id />
+              <Name>RandomFloat</Name>
+              <DataType>Single</DataType>
+              <Meta />
+            </PointDto>
+          </Points>
+        </DeviceDto>
+      </Devices>
+      <Config />
+    </ChannelDto>
+  </Channels>
+  <Mappings />
+</ProjectDto>

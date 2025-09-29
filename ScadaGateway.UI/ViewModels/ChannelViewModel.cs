@@ -1,0 +1,30 @@
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using ScadaGateway.Core.Models;
+using System.Collections.ObjectModel;
+
+namespace ScadaGateway.UI.ViewModels
+{
+    public partial class ChannelViewModel : ObservableObject
+    {
+        public string Id { get; set; } = "";
+        public string Name { get; set; } = "";
+        public string Protocol { get; set; } = "";
+        public bool Enabled { get; set; }
+
+        public string DisplayName => $"{Name} ({Protocol})";
+
+        public ObservableCollection<DeviceViewModel> Devices { get; } = new();
+
+        public ChannelViewModel() { } // default ctor cho XAML/designer
+
+        public ChannelViewModel(Channel model)
+        {
+            Id = model.Id;
+            Name = model.Name;
+            Protocol = model.Protocol;
+            Enabled = model.Enabled;
+            foreach (var d in model.Devices)
+                Devices.Add(new DeviceViewModel(d));
+        }
+    }
+}

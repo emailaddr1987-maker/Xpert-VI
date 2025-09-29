@@ -1,0 +1,214 @@
+﻿<Window x:Class="ScadaGateway.UI.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:ScadaGateway.UI.ViewModels"
+        Title="Xpert Gateway - VI" Height="860" Width="1250"
+        Icon="Resources\logo.ico"
+        FontFamily="Segoe UI">
+
+    <Window.DataContext>
+        <vm:MainViewModel />
+    </Window.DataContext>
+
+    <DockPanel>
+        <!-- Menu trên cùng -->
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="File">
+                <MenuItem Header="New Channel">
+                    <MenuItem Header="External" Command="{Binding NewExternalChannelCommand}" />
+                    <MenuItem Header="Heartbeat" Command="{Binding AddChannelCommand}" CommandParameter="Heartbeat" />
+                    <MenuItem Header="IEC60870">
+                        <MenuItem Header="IEC104 Slave" Command="{Binding AddChannelCommand}" CommandParameter="IEC104Slave" />
+                        <MenuItem Header="IEC104 Master" Command="{Binding AddChannelCommand}" CommandParameter="IEC104Master" />
+                    </MenuItem>
+                    <MenuItem Header="IEC61850">
+                        <MenuItem Header="IEC61850 Client" Command="{Binding AddChannelCommand}" CommandParameter="IEC61850Client" />
+                    </MenuItem>
+                    <MenuItem Header="Internal" Command="{Binding AddChannelCommand}" CommandParameter="Internal" />
+                    <MenuItem Header="Modbus">
+                        <MenuItem Header="Modbus Master Channel" Command="{Binding AddChannelCommand}" CommandParameter="ModbusMaster" />
+                        <MenuItem Header="Modbus Slave Channel" Command="{Binding AddChannelCommand}" CommandParameter="ModbusSlave" />
+                    </MenuItem>
+                    <MenuItem Header="OPC Client" Command="{Binding AddChannelCommand}" CommandParameter="OPCClient" />
+                    <MenuItem Header="Random" Command="{Binding AddChannelCommand}" CommandParameter="Random" />
+                </MenuItem>
+                <MenuItem Header="Save" Command="{Binding SaveProjectCommand}" InputGestureText="Ctrl+S"/>
+                <MenuItem Header="Load" Command="{Binding LoadProjectCommand}" InputGestureText="Ctrl+O"/>
+                <Separator/>
+                <MenuItem Header="Exit" Command="{Binding ExitCommand}" InputGestureText="Ctrl+X"/>
+            </MenuItem>
+            <MenuItem Header="Edit">
+                <MenuItem Header="Gateway Setting" Command="{Binding GatewaySettingCommand}"/>
+            </MenuItem>
+            <MenuItem Header="View"/>
+            <MenuItem Header="Logs">
+                <MenuItem Header="Auto Scroll log"/>
+                <MenuItem Header="Clear log" Command="{Binding ClearLogsCommand}"/>
+                <MenuItem Header="Save Log to File" Command="{Binding SaveLogCommand}"/>
+                <MenuItem Header="Configure client log"/>
+                <MenuItem Header="Configure server log"/>
+            </MenuItem>
+            <MenuItem Header="Help">
+                <MenuItem Header="Licence information" Command="{Binding LicenceCommand}"/>
+                <MenuItem Header="About" Command="{Binding AboutCommand}"/>
+            </MenuItem>
+        </Menu>
+
+        <!-- Layout chính -->
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="5"/>
+                <RowDefinition Height="200"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="260"/>
+                <ColumnDefinition Width="5"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- TreeView bên trái -->
+            <TreeView Grid.Row="0" Grid.Column="0"
+                      Margin="5"
+                      SelectedItemChanged="TreeView_SelectedItemChanged">
+                <TreeView.Resources>
+                    <Style TargetType="TreeViewItem">
+                        <EventSetter Event="PreviewMouseRightButtonDown"
+                     Handler="TreeViewItem_PreviewMouseRightButtonDown"/>
+                    </Style>
+                    <!-- Channel hiển thị Enable/Disable -->
+                    <HierarchicalDataTemplate DataType="{x:Type vm:ChannelViewModel}" ItemsSource="{Binding Devices}">
+                        <StackPanel Orientation="Horizontal">
+                            <CheckBox IsChecked="{Binding Enabled}" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                            <TextBlock Text="{Binding DisplayName}" VerticalAlignment="Center"/>
+                        </StackPanel>
+
+                        <!-- Context menu chỉ xuất hiện với channel có Protocol = External -->
+                        <HierarchicalDataTemplate.Triggers>
+                            <DataTrigger Binding="{Binding Protocol}" Value="External">
+                                <Setter Property="ContextMenu">
+                                    <Setter.Value>
+                                        <ContextMenu DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
+                                            <MenuItem Header="Add node" Command="{Binding AddNodeCommand}" />
+                                            <MenuItem Header="Add point"
+                                                      Command="{Binding DataContext.AddPointCtxCommand, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                            <Separator/>
+                                            <MenuItem Header="Edit channel"
+                                                      Command="{Binding DataContext.EditChannelCommand, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                            <MenuItem Header="Delete channel"
+                                                      Command="{Binding DataContext.DeleteChannelCommand, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                            <Separator/>
+                                            <MenuItem Header="Prepare mapping"
+                                                      Command="{Binding DataContext.PrepareMappingCommand, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                            <MenuItem Header="Add mappings"
+                                                      Command="{Binding DataContext.AddMappingsCommand, RelativeSource={RelativeSource AncestorType=Window}}" IsEnabled="False"/>
+                                            <MenuItem Header="Add mirrored mapping"
+                                                      Command="{Binding DataContext.AddMirroredMappingCommand, RelativeSource={RelativeSource AncestorType=Window}}" IsEnabled="False"/>
+                                        </ContextMenu>
+                                    </Setter.Value>
+                                </Setter>
+                            </DataTrigger>
+                        </HierarchicalDataTemplate.Triggers>
+                    </HierarchicalDataTemplate>
+
+                    <!-- Device -->
+                    <HierarchicalDataTemplate DataType="{x:Type vm:DeviceViewModel}" ItemsSource="{Binding Points}">
+                        <TextBlock Text="{Binding Name}" />
+                    </HierarchicalDataTemplate>
+
+                    <!-- Point -->
+                    <DataTemplate DataType="{x:Type vm:PointViewModel}">
+                        <TextBlock Text="{Binding Name}" />
+                    </DataTemplate>
+                </TreeView.Resources>
+
+                <!-- Root Gateway -->
+                <TreeViewItem Header="Gateway" IsExpanded="True" ItemsSource="{Binding Channels}">
+                    <TreeViewItem.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Header="New Channel">
+                                <MenuItem Header="External" Command="{Binding PlacementTarget.DataContext.NewExternalChannelCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                                <MenuItem Header="Heartbeat" Command="{Binding PlacementTarget.DataContext.AddChannelCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="Heartbeat" />
+                                <MenuItem Header="IEC60870">
+                                    <MenuItem Header="IEC104 Slave" Command="{Binding PlacementTarget.DataContext.AddChannelCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="IEC104Slave" />
+                                    <MenuItem Header="IEC104 Master" Command="{Binding PlacementTarget.DataContext.AddChannelCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="IEC104Master" />
+                                </MenuItem>
+                                <MenuItem Header="IEC61850">
+                                    <MenuItem Header="IEC61850 Client" Command="{Binding PlacementTarget.DataContext.AddChannelCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="IEC61850Client" />
+                                </MenuItem>
+                                <MenuItem Header="Internal" Command="{Binding PlacementTarget.DataContext.AddChannelCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="Internal" />
+                                <MenuItem Header="Modbus">
+                                    <MenuItem Header="Modbus Master Channel" Command="{Binding PlacementTarget.DataContext.AddChannelCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="ModbusMaster" />
+                                    <MenuItem Header="Modbus Slave Channel" Command="{Binding PlacementTarget.DataContext.AddChannelCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="ModbusSlave" />
+                                </MenuItem>
+                                <MenuItem Header="OPC Client" Command="{Binding PlacementTarget.DataContext.AddChannelCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="OPCClient" />
+                                <MenuItem Header="Random" Command="{Binding PlacementTarget.DataContext.AddChannelCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="Random" />
+                            </MenuItem>
+                        </ContextMenu>
+                    </TreeViewItem.ContextMenu>
+                </TreeViewItem>
+            </TreeView>
+
+            <!-- Splitter -->
+            <GridSplitter Grid.Row="0" Grid.Column="1"
+                          Width="5" HorizontalAlignment="Stretch"
+                          VerticalAlignment="Stretch"
+                          ResizeDirection="Columns"
+                          Background="LightGray"/>
+
+            <!-- Right panel -->
+            <Grid Grid.Row="0" Grid.Column="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="5"/>
+                    <RowDefinition Height="200"/>
+                </Grid.RowDefinitions>
+
+                <!-- Points -->
+                <DataGrid Grid.Row="0" ItemsSource="{Binding SelectedPoints}" AutoGenerateColumns="False" Margin="5">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="*"/>
+                        <DataGridTextColumn Header="Data type" Binding="{Binding Type}" Width="100"/>
+                        <DataGridTextColumn Header="Value" Binding="{Binding Value}" Width="100"/>
+                        <DataGridTextColumn Header="Quality" Binding="{Binding Quality}" Width="100"/>
+                        <DataGridTextColumn Header="Timestamp" Binding="{Binding Timestamp, StringFormat=dd/MM/yyyy HH:mm:ss.fff}" Width="180"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+
+                <!-- Splitter giữa Points và Mapping -->
+                <GridSplitter Grid.Row="1"
+                              Height="5" HorizontalAlignment="Stretch"
+                              VerticalAlignment="Stretch"
+                              ResizeDirection="Rows"
+                              Background="LightGray"/>
+
+                <!-- Mapping -->
+                <DataGrid Grid.Row="2" ItemsSource="{Binding SelectedMappings}" AutoGenerateColumns="False" Margin="5">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="120"/>
+                        <DataGridTextColumn Header="Point1/Source" Binding="{Binding Source}" Width="*"/>
+                        <DataGridTextColumn Header="Point2/Dest" Binding="{Binding Destination}" Width="*"/>
+                        <DataGridTextColumn Header="Direction/Timer" Binding="{Binding DirectionOrTimer}" Width="150"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Grid>
+
+            <!-- Splitter giữa trên & Logs -->
+            <GridSplitter Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3"
+                          Height="5" HorizontalAlignment="Stretch"
+                          VerticalAlignment="Stretch"
+                          ResizeDirection="Rows"
+                          Background="LightGray"/>
+
+            <!-- Logs -->
+            <DataGrid Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3"
+                      ItemsSource="{Binding Logs}" AutoGenerateColumns="False" Margin="5">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Time" Binding="{Binding Time, StringFormat=dd/MM/yyyy HH:mm:ss.fff}" Width="200"/>
+                    <DataGridTextColumn Header="Source" Binding="{Binding Source}" Width="150"/>
+                    <DataGridTextColumn Header="Content" Binding="{Binding Content}" Width="*"/>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Grid>
+    </DockPanel>
+</Window>
