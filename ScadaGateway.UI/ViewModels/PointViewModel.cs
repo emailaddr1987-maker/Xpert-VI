@@ -1,27 +1,43 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using ScadaGateway.Core.Models;
+using System;
+using System.Windows.Threading;
 
 namespace ScadaGateway.UI.ViewModels
 {
     public partial class PointViewModel : ObservableObject
     {
-        public string Id { get; set; } = "";
-        public string Name { get; set; } = "";
-        public string Type { get; set; } = "";
-        public object? Value { get; set; }
-        public string Quality { get; set; } = "Bad";
-        public DateTime Timestamp { get; set; }
+        private readonly Point _model;
 
-        public PointViewModel() { }
+        public string Id => _model.Id;
+        [ObservableProperty] private string name;
+        [ObservableProperty] private string type;
+        [ObservableProperty] private object? value;
+        [ObservableProperty] private string quality;
+        [ObservableProperty] private DateTime timestamp;
+
+        public Point Model => _model;
 
         public PointViewModel(Point model)
         {
-            Id = model.Id;
-            Name = model.Name;
-            Type = model.DataType.ToString();
-            Value = model.Value;
-            Quality = model.Quality;
-            Timestamp = model.Timestamp;
+            _model = model ?? throw new ArgumentNullException(nameof(model));
+            name = _model.Name;
+            type = _model.DataType.ToString();
+            value = _model.Value;
+            quality = _model.Quality;
+            timestamp = _model.Timestamp.ToLocalTime();
+
+            // subscribe để cập nhật realtime khi driver thay đổi Point
+            _model.ValueChanged += (s, p) =>
+            {
+                var dispatcher = Dispatcher.CurrentDispatcher;
+                dispatcher.Invoke(() =>
+                {
+                    Value = p.Value;
+                    Quality = p.Quality;
+                    Timestamp = p.Timestamp.ToLocalTime();
+                });
+            };
         }
     }
 }

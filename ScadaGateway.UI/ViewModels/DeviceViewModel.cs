@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using ScadaGateway.Core.Models;
+using System;
 using System.Collections.ObjectModel;
 
 namespace ScadaGateway.UI.ViewModels
@@ -11,12 +12,14 @@ namespace ScadaGateway.UI.ViewModels
 
         public ObservableCollection<PointViewModel> Points { get; } = new();
 
-        public DeviceViewModel() { }
+        public Device Model { get; }
 
         public DeviceViewModel(Device model)
         {
+            Model = model ?? throw new ArgumentNullException(nameof(model));
             Id = model.Id;
             Name = model.Name;
+
             foreach (var p in model.Points)
                 Points.Add(new PointViewModel(p));
         }

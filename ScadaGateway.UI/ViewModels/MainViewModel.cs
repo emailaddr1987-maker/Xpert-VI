@@ -2,7 +2,6 @@
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Win32;
 using ScadaGateway.Core.Models;
-using ScadaGateway.Core.Dto;
 using ScadaGateway.Core.Services;
 using System;
 using System.Collections.ObjectModel;
@@ -28,6 +27,7 @@ namespace ScadaGateway.UI.ViewModels
         private readonly DriverManager _driverManager;
         private readonly MappingEngine _mapping;
         private readonly GatewayService _gateway;
+        private readonly PersistenceService _persistence;
 
         public IRelayCommand<string> AddChannelCommand { get; }
         public IRelayCommand NewExternalChannelCommand { get; }
@@ -39,13 +39,12 @@ namespace ScadaGateway.UI.ViewModels
         public MainViewModel()
         {
             _driverManager = new DriverManager();
-
-            // load drivers folder relative to exe
             var driversFolder = Path.Combine(AppContext.BaseDirectory, "drivers");
             _driverManager.LoadDriversFromFolder(driversFolder);
 
             _mapping = new MappingEngine();
             _gateway = new GatewayService(_driverManager, _mapping);
+            _persistence = new PersistenceService();
 
             AddChannelCommand = new RelayCommand<string>(OnAddChannel);
             NewExternalChannelCommand = new RelayCommand(() => OnAddChannel("Mock"));
@@ -53,34 +52,21 @@ namespace ScadaGateway.UI.ViewModels
             LoadProjectCommand = new RelayCommand(OnLoadProject);
             ClearLogsCommand = new RelayCommand(() => Logs.Clear());
             ExitCommand = new RelayCommand(() => Application.Current.Shutdown());
-
-            // auto load project.xml if exists
-            var proj = Path.Combine(AppContext.BaseDirectory, "project.xml");
-            if (File.Exists(proj))
-            {
-                try
-                {
-                    var dto = ProjectService.Load(proj);
-                    LoadFromDto(dto);
-                    Logs.Add(new LogEntry { Source = "Main", Content = $"Loaded project.xml, channels={dto.Channels.Count}" });
-                }
-                catch (Exception ex)
-                {
-                    Logs.Add(new LogEntry { Source = "Main", Content = "Load error: " + ex.Message });
-                }
-            }
         }
 
-        private async void OnAddChannel(string? protocol)
+        private async void OnAddChannel(string protocol)
         {
-            if (string.IsNullOrWhiteSpace(protocol)) return;
             try
             {
                 var id = Guid.NewGuid().ToString("N").Substring(0, 8);
                 var ch = _gateway.CreateChannel(protocol, id, protocol, new System.Collections.Generic.Dictionary<string, string>());
                 Channels.Add(new ChannelViewModel(ch));
                 await _gateway.StartChannelAsync(ch);
-                Logs.Add(new LogEntry { Source = "UI", Content = $"Channel {ch.Name} ({ch.Protocol}) added & started." });
+                Logs.Add(new LogEntry
+                {
+                    Source = "UI",
+                    Content = $"Channel {ch.Name} ({ch.Protocol}) added & started."
+                });
             }
             catch (Exception ex)
             {
@@ -92,35 +78,17 @@ namespace ScadaGateway.UI.ViewModels
         {
             try
             {
-                var dto = new ProjectDto();
-                foreach (var chVm in Channels)
+                var dlg = new SaveFileDialog
                 {
-                    var chDto = new ChannelDto { Name = chVm.DisplayName, Protocol = chVm.Protocol };
-                    foreach (var devVm in chVm.Devices)
-                    {
-                        var devDto = new DeviceDto { Name = devVm.Name };
-                        foreach (var ptVm in devVm.Points)
-                        {
-                            devDto.Points.Add(new PointDto
-                            {
-                                Name = ptVm.Name,
-                                DataType = ptVm.Type
-                            });
-                        }
-                        chDto.Devices.Add(devDto);
-                    }
-                    dto.Channels.Add(chDto);
-                }
-
-                var dialog = new SaveFileDialog
-                {
-                    Filter = "XML files (*.xml)|*.xml",
+                    Title = "Save Project",
+                    Filter = "Project Files (*.xml)|*.xml",
                     FileName = "project.xml"
                 };
-                if (dialog.ShowDialog() == true)
+                if (dlg.ShowDialog() == true)
                 {
-                    ProjectService.Save(dto, dialog.FileName);
-                    Logs.Add(new LogEntry { Source = "UI", Content = $"Saved project to {dialog.FileName}" });
+                    var dto = PersistenceService.ToDto(_gateway.Channels, _gateway.Mappings);
+                    _persistence.SaveProject(dto, dlg.FileName);
+                    Logs.Add(new LogEntry { Source = "UI", Content = $"Saved project to {dlg.FileName}" });
                 }
             }
             catch (Exception ex)
@@ -133,12 +101,33 @@ namespace ScadaGateway.UI.ViewModels
         {
             try
             {
-                var dialog = new OpenFileDialog { Filter = "XML files (*.xml)|*.xml" };
-                if (dialog.ShowDialog() == true)
+                var dlg = new OpenFileDialog
                 {
-                    var dto = ProjectService.Load(dialog.FileName);
-                    LoadFromDto(dto);
-                    Logs.Add(new LogEntry { Source = "UI", Content = $"Project loaded from {dialog.FileName}" });
+                    Title = "Open Project",
+                    Filter = "Project Files (*.xml)|*.xml"
+                };
+                if (dlg.ShowDialog() == true && File.Exists(dlg.FileName))
+                {
+                    var dto = _persistence.LoadProject(dlg.FileName);
+                    var (chs, maps) = PersistenceService.FromDto(dto);
+
+                    Channels.Clear();
+                    _gateway.Channels.Clear();
+                    _mapping.Clear();
+
+                    foreach (var ch in chs)
+                    {
+                        Channels.Add(new ChannelViewModel(ch));
+                        _gateway.Channels.Add(ch);
+                    }
+                    foreach (var m in maps)
+                        _mapping.RegisterMapping(m, _gateway.LookupPoint, _gateway.WritePoint);
+
+                    Logs.Add(new LogEntry
+                    {
+                        Source = "UI",
+                        Content = $"Loaded project from {dlg.FileName}, channels={chs.Count}"
+                    });
                 }
             }
             catch (Exception ex)
@@ -147,39 +136,10 @@ namespace ScadaGateway.UI.ViewModels
             }
         }
 
-        private void LoadFromDto(ProjectDto dto)
-        {
-            Channels.Clear();
-            foreach (var chDto in dto.Channels)
-            {
-                var chVm = new ChannelViewModel
-                {
-                    Name = chDto.Name,
-                    Protocol = chDto.Protocol,
-                    Enabled = true
-                };
-
-                foreach (var devDto in chDto.Devices)
-                {
-                    var devVm = new DeviceViewModel { Name = devDto.Name };
-                    foreach (var ptDto in devDto.Points)
-                    {
-                        devVm.Points.Add(new PointViewModel
-                        {
-                            Name = ptDto.Name,
-                            Type = ptDto.DataType
-                        });
-                    }
-                    chVm.Devices.Add(devVm);
-                }
-                Channels.Add(chVm);
-            }
-        }
-
-        // called from code-behind when selection in TreeView changes
         public void OnSelectedTreeItemChanged(object? selection)
         {
             SelectedPoints.Clear();
+
             if (selection is DeviceViewModel dv)
             {
                 foreach (var p in dv.Points) SelectedPoints.Add(p);

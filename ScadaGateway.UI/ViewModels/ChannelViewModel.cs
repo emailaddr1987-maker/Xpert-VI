@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using ScadaGateway.Core.Models;
+using System;
 using System.Collections.ObjectModel;
 
 namespace ScadaGateway.UI.ViewModels
@@ -15,14 +16,16 @@ namespace ScadaGateway.UI.ViewModels
 
         public ObservableCollection<DeviceViewModel> Devices { get; } = new();
 
-        public ChannelViewModel() { } // default ctor cho XAML/designer
+        public Channel Model { get; }
 
         public ChannelViewModel(Channel model)
         {
+            Model = model ?? throw new ArgumentNullException(nameof(model));
             Id = model.Id;
             Name = model.Name;
             Protocol = model.Protocol;
             Enabled = model.Enabled;
+
             foreach (var d in model.Devices)
                 Devices.Add(new DeviceViewModel(d));
         }

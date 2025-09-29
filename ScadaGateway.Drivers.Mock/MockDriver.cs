@@ -1,9 +1,10 @@
-﻿using System;
+﻿using ScadaGateway.Core.Contracts;
+using ScadaGateway.Core.Models;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using ScadaGateway.Core.Contracts;
-using ScadaGateway.Core.Models;
 
 namespace ScadaGateway.Drivers.Mock
 {
@@ -13,7 +14,7 @@ namespace ScadaGateway.Drivers.Mock
 
         public Channel CreateChannel(string id, string name, IDictionary<string, string>? config = null)
         {
-            var ch = new Channel { Id = id, Name = name, Protocol = Protocol };
+            var ch = new Channel { Id = id, Name = name, Protocol = Protocol, Enabled = true };
             var dev = new Device { Id = $"{id}.dev1", Name = "MockDevice" };
             dev.Points.Add(new Point { Id = $"{id}.dev1.p1", Name = "RandomBool", DataType = PointDataType.Bool });
             dev.Points.Add(new Point { Id = $"{id}.dev1.p2", Name = "RandomFloat", DataType = PointDataType.Single });
@@ -22,13 +23,15 @@ namespace ScadaGateway.Drivers.Mock
         }
 
         private CancellationTokenSource? _cts;
+
         public async Task StartAsync(Channel channel, CancellationToken ct)
         {
             _cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
             var rnd = new Random();
+            // background loop that updates points
             await Task.Run(async () =>
             {
-                while (!_cts.IsCancellationRequested)
+                while (!_cts.Token.IsCancellationRequested)
                 {
                     foreach (var dev in channel.Devices)
                     {
@@ -39,7 +42,7 @@ namespace ScadaGateway.Drivers.Mock
                             else p.SetValue(null, "Bad");
                         }
                     }
-                    await Task.Delay(1000, _cts.Token);
+                    try { await Task.Delay(1000, _cts.Token); } catch { }
                 }
             }, _cts.Token);
         }
@@ -48,6 +51,30 @@ namespace ScadaGateway.Drivers.Mock
         {
             _cts?.Cancel();
             return Task.CompletedTask;
+        }
+
+        public Task<IEnumerable<Point>> DiscoverPointsAsync(Channel channel, CancellationToken ct)
+        {
+            var points = channel.Devices.SelectMany(d => d.Points).ToArray();
+            return Task.FromResult((IEnumerable<Point>)points);
+        }
+
+        public Task<object?> ReadPointAsync(Channel channel, Point point, CancellationToken ct)
+        {
+            return Task.FromResult(point.Value);
+        }
+
+        public Task<bool> WritePointAsync(Channel channel, Point point, object? value, CancellationToken ct)
+        {
+            try
+            {
+                point.SetValue(value);
+                return Task.FromResult(true);
+            }
+            catch
+            {
+                return Task.FromResult(false);
+            }
         }
     }
 }

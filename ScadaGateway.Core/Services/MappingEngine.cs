@@ -30,6 +30,10 @@ namespace ScadaGateway.Core.Services
                 _timers.Add(timer);
             }
         }
+        public void Clear()
+        {
+            _mappings.Clear();
+        }
 
         // called by GatewayService when a point changes
         public void OnPointChanged(Point p, Func<string, Point?> lookupPoint, Action<Point, object?> writePoint)
