@@ -1,0 +1,94 @@
+﻿<Window x:Class="ScadaGateway.UI.Dialogs.ModbusChannelDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib"
+        Title="Add Modbus Master Channel" Height="480" Width="520"
+        WindowStartupLocation="CenterOwner" ResizeMode="NoResize">
+    <StackPanel Margin="10">
+        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+            <TextBlock Text="Channel name:" Width="140" VerticalAlignment="Center"/>
+            <TextBox Width="300" Text="{Binding ChannelName, UpdateSourceTrigger=PropertyChanged}"/>
+        </StackPanel>
+
+        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+            <TextBlock Text="Modbus Type:" Width="140" VerticalAlignment="Center"/>
+            <ComboBox Width="160" SelectedValue="{Binding ModbusType}">
+                <sys:String>RTU</sys:String>
+                <sys:String>TCP</sys:String>
+            </ComboBox>
+            <TextBlock Text="Connection:" Width="80" Margin="10,0,0,0" VerticalAlignment="Center"/>
+            <ComboBox Width="100" SelectedValue="{Binding ConnectionType}">
+                <sys:String>Serial</sys:String>
+                <sys:String>TCP</sys:String>
+            </ComboBox>
+        </StackPanel>
+
+        <CheckBox Content="Enabled" IsChecked="{Binding Enabled}" Margin="0,0,0,8"/>
+
+        <GroupBox Header="Serial setting" Margin="0,0,0,8" IsEnabled="{Binding IsSerial}">
+            <StackPanel Margin="6">
+                <StackPanel Orientation="Horizontal" Margin="0,2">
+                    <TextBlock Text="COM Port:" Width="140" VerticalAlignment="Center"/>
+                    <TextBox Width="160" Text="{Binding ComPort}"/>
+                    <TextBlock Text="Baud Rate:" Width="80" Margin="12,0,0,0" VerticalAlignment="Center"/>
+                    <TextBox Width="80" Text="{Binding BaudRate}"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="0,6">
+                    <TextBlock Text="Data Bits:" Width="140" VerticalAlignment="Center"/>
+                    <ComboBox Width="80" SelectedValue="{Binding DataBits}">
+                        <sys:Int32>7</sys:Int32>
+                        <sys:Int32>8</sys:Int32>
+                    </ComboBox>
+
+                    <TextBlock Text="Stop Bits:" Width="80" Margin="12,0,0,0" VerticalAlignment="Center"/>
+                    <ComboBox Width="100" SelectedValue="{Binding StopBits}">
+                        <sys:String>One</sys:String>
+                        <sys:String>Two</sys:String>
+                    </ComboBox>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="0,6">
+                    <TextBlock Text="Parity:" Width="140" VerticalAlignment="Center"/>
+                    <ComboBox Width="100" SelectedValue="{Binding Parity}">
+                        <sys:String>None</sys:String>
+                        <sys:String>Odd</sys:String>
+                        <sys:String>Even</sys:String>
+                    </ComboBox>
+
+                    <TextBlock Text="Handshake:" Width="80" Margin="12,0,0,0" VerticalAlignment="Center"/>
+                    <ComboBox Width="100" SelectedValue="{Binding Handshake}">
+                        <sys:String>None</sys:String>
+                        <sys:String>XOnXOff</sys:String>
+                        <sys:String>RTS</sys:String>
+                    </ComboBox>
+                </StackPanel>
+            </StackPanel>
+        </GroupBox>
+
+        <GroupBox Header="TCP client setting" Margin="0,0,0,8" IsEnabled="{Binding IsTcp}">
+            <StackPanel Margin="6">
+                <StackPanel Orientation="Horizontal" Margin="0,2">
+                    <TextBlock Text="Server address:" Width="140" VerticalAlignment="Center"/>
+                    <TextBox Width="220" Text="{Binding ServerAddress}"/>
+                    <TextBlock Text="Port:" Width="40" Margin="12,0,0,0" VerticalAlignment="Center"/>
+                    <TextBox Width="80" Text="{Binding ClientPort}"/>
+                </StackPanel>
+            </StackPanel>
+        </GroupBox>
+
+        <GroupBox Header="TCP server setting" Margin="0,0,0,8">
+            <StackPanel Margin="6">
+                <StackPanel Orientation="Horizontal" Margin="0,2">
+                    <TextBlock Text="Port:" Width="140" VerticalAlignment="Center"/>
+                    <TextBox Width="80" Text="{Binding ServerPort}"/>
+                </StackPanel>
+            </StackPanel>
+        </GroupBox>
+
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,6,0,0">
+            <Button Content="OK" Width="90" Margin="6" IsDefault="True" Click="Ok_Click"/>
+            <Button Content="Cancel" Width="90" Margin="6" IsCancel="True"/>
+        </StackPanel>
+    </StackPanel>
+</Window>

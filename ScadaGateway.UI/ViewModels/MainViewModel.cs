@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.Win32;
 using ScadaGateway.Core.Models;
 using ScadaGateway.Core.Services;
+using ScadaGateway.UI.Dialogs;
 using System;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -58,21 +59,37 @@ namespace ScadaGateway.UI.ViewModels
         {
             try
             {
-                var id = Guid.NewGuid().ToString("N").Substring(0, 8);
-                var ch = _gateway.CreateChannel(protocol, id, protocol, new System.Collections.Generic.Dictionary<string, string>());
+                var dlg = ChannelDialogFactory.Create(protocol);
+                if (dlg == null)
+                {
+                    // nếu dialog không có — fallback: tạo channel ngay
+                    var id = Guid.NewGuid().ToString("N").Substring(0, 8);
+                    var chFallback = _gateway.CreateChannel(protocol, id, protocol, null);
+                    Channels.Add(new ChannelViewModel(chFallback));
+                    await _gateway.StartChannelAsync(chFallback);
+                    Logs.Add(new LogEntry { Source = "UI", Content = $"Channel {chFallback.Name} ({chFallback.Protocol}) added & started." });
+                    return;
+                }
+
+                // show dialog (owner is main window; we open modal)
+                var result = dlg.ShowDialog();
+                if (result != true) return; // user cancel
+
+                var cfg = dlg.GetConfig();
+                var name = dlg.ChannelName ?? protocol;
+                var id2 = Guid.NewGuid().ToString("N").Substring(0, 8);
+                var ch = _gateway.CreateChannel(protocol, id2, name, cfg);
                 Channels.Add(new ChannelViewModel(ch));
                 await _gateway.StartChannelAsync(ch);
-                Logs.Add(new LogEntry
-                {
-                    Source = "UI",
-                    Content = $"Channel {ch.Name} ({ch.Protocol}) added & started."
-                });
+
+                Logs.Add(new LogEntry { Source = "UI", Content = $"Channel {ch.Name} ({ch.Protocol}) added & started." });
             }
             catch (Exception ex)
             {
                 Logs.Add(new LogEntry { Source = "UI", Content = "Add channel error: " + ex.Message });
             }
         }
+
 
         private void OnSaveProject()
         {
