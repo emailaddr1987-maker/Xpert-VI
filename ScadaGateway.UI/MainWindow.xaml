@@ -38,20 +38,18 @@
                 <Separator/>
                 <MenuItem Header="Exit" Command="{Binding ExitCommand}" InputGestureText="Ctrl+X"/>
             </MenuItem>
-            <MenuItem Header="_Edit">
+            <MenuItem Header="Edit">
                 <MenuItem Header="Gateway Setting" Command="{Binding GatewaySettingCommand}"/>
             </MenuItem>
-            <MenuItem Header="_View"/>
-            <MenuItem Header="_Logs">
-                <MenuItem>
-                    <CheckBox Content="Auto Scroll Log" IsChecked="{Binding AutoScrollLogs, Mode=TwoWay}"/>
-                </MenuItem>
+            <MenuItem Header="View"/>
+            <MenuItem Header="Logs">
+                <CheckBox Content="Auto Scroll Log" IsChecked="{Binding AutoScrollLogs, Mode=TwoWay}"/>
                 <MenuItem Header="Clear log" Command="{Binding ClearLogsCommand}"/>
                 <MenuItem Header="Save Log to File" Command="{Binding SaveLogsCommand}"/>
                 <MenuItem Header="Configure client log"/>
                 <MenuItem Header="Configure server log"/>
             </MenuItem>
-            <MenuItem Header="_Help">
+            <MenuItem Header="Help">
                 <MenuItem Header="Licence information" Command="{Binding ShowLicenceCommand}"/>
                 <MenuItem Header="About" Command="{Binding ShowAboutCommand}"/>
             </MenuItem>
