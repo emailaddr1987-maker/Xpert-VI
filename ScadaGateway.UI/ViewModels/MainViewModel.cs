@@ -152,7 +152,8 @@ namespace ScadaGateway.UI.ViewModels
             }
             catch (Exception ex)
             {
-                Logs.Add(new LogEntry { Source = "UI", Content = "Add channel error: " + ex.Message });
+                Logs.Add(new LogEntry { Source = "UI", Content = "Add channel error: " + ex.ToString() });
+                //Logs.Add(new LogEntry { Source = "UI", Content = "Add channel error: " + ex.Message });
             }
         }
 
