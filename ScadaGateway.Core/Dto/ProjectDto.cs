@@ -25,6 +25,16 @@ namespace ScadaGateway.Core.Dto
         public string Id { get; set; } = "";
         public string Name { get; set; } = "";
         public List<PointDto> Points { get; set; } = new();
+
+        // ✅ Bổ sung
+        public List<DataTypeGroupDto> DataTypeGroups { get; set; } = new();
+    }
+
+    public class DataTypeGroupDto
+    {
+        public string Name { get; set; } = "";
+        public string Function { get; set; } = "";
+        public List<PointDto> Points { get; set; } = new();
     }
 
     public class PointDto
