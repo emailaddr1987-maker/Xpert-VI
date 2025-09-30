@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScadaGateway.Drivers.Mock",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScadaGateway.UI", "ScadaGateway.UI\ScadaGateway.UI.csproj", "{BE3564CE-9FD6-49DE-B807-68D92576132E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScadaGateway.Drivers.Modbus", "ScadaGateway.Drivers.Modbus\ScadaGateway.Drivers.Modbus.csproj", "{3E9C2844-E35D-4D09-AB1A-C3369C846408}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,5 +32,9 @@ Global
 		{BE3564CE-9FD6-49DE-B807-68D92576132E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BE3564CE-9FD6-49DE-B807-68D92576132E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BE3564CE-9FD6-49DE-B807-68D92576132E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3E9C2844-E35D-4D09-AB1A-C3369C846408}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3E9C2844-E35D-4D09-AB1A-C3369C846408}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3E9C2844-E35D-4D09-AB1A-C3369C846408}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3E9C2844-E35D-4D09-AB1A-C3369C846408}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

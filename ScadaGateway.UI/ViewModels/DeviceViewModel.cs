@@ -1,27 +1,20 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using ScadaGateway.Core.Models;
-using System;
+﻿using ScadaGateway.Core.Models;
 using System.Collections.ObjectModel;
 
 namespace ScadaGateway.UI.ViewModels
 {
-    public partial class DeviceViewModel : ObservableObject
+    public class DeviceViewModel
     {
-        public string Id { get; set; } = "";
-        public string Name { get; set; } = "";
-
-        public ObservableCollection<PointViewModel> Points { get; } = new();
-
         public Device Model { get; }
+        public string Name => Model.Name;
+
+        public ObservableCollection<DataTypeGroupViewModel> DataTypeGroups { get; } = new();
 
         public DeviceViewModel(Device model)
         {
-            Model = model ?? throw new ArgumentNullException(nameof(model));
-            Id = model.Id;
-            Name = model.Name;
-
-            foreach (var p in model.Points)
-                Points.Add(new PointViewModel(p));
+            Model = model;
+            foreach (var g in model.DataTypeGroups)
+                DataTypeGroups.Add(new DataTypeGroupViewModel(g));
         }
     }
 }

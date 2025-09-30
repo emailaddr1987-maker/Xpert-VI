@@ -36,7 +36,7 @@ namespace ScadaGateway.UI.ViewModels
         public IRelayCommand LoadProjectCommand { get; }
         public IRelayCommand ClearLogsCommand { get; }
         public IRelayCommand ExitCommand { get; }
-
+        public IRelayCommand<ChannelViewModel> AddDeviceCommand { get; }
         public MainViewModel()
         {
             _driverManager = new DriverManager();
@@ -53,10 +53,28 @@ namespace ScadaGateway.UI.ViewModels
             LoadProjectCommand = new RelayCommand(OnLoadProject);
             ClearLogsCommand = new RelayCommand(() => Logs.Clear());
             ExitCommand = new RelayCommand(() => Application.Current.Shutdown());
-        }
 
-        private async void OnAddChannel(string protocol)
+            AddDeviceCommand = new RelayCommand<ChannelViewModel>(OnAddDevice);
+        }
+        private void OnAddDevice(ChannelViewModel? channelVm)
         {
+            if (channelVm == null) return;
+            var dev = new Device { Id = Guid.NewGuid().ToString(), Name = "Device1" };
+
+            // Thêm 4 nhóm mặc định T1..T4
+            dev.DataTypeGroups.Add(new DataTypeGroup { Id = Guid.NewGuid().ToString(), Name = "T1", Function = "Coil" });
+            dev.DataTypeGroups.Add(new DataTypeGroup { Id = Guid.NewGuid().ToString(), Name = "T2", Function = "Discrete" });
+            dev.DataTypeGroups.Add(new DataTypeGroup { Id = Guid.NewGuid().ToString(), Name = "T3", Function = "InputRegister" });
+            dev.DataTypeGroups.Add(new DataTypeGroup { Id = Guid.NewGuid().ToString(), Name = "T4", Function = "HoldingRegister" });
+
+            channelVm.Devices.Add(new DeviceViewModel(dev));
+            channelVm.Model.Devices.Add(dev);
+
+            Logs.Add(new LogEntry { Source = "UI", Content = $"Added Device to channel {channelVm.DisplayName}" });
+        }
+        private async void OnAddChannel(string? protocol)
+        {
+            if (string.IsNullOrEmpty(protocol)) return;
             try
             {
                 var dlg = ChannelDialogFactory.Create(protocol);
@@ -159,12 +177,16 @@ namespace ScadaGateway.UI.ViewModels
 
             if (selection is DeviceViewModel dv)
             {
-                foreach (var p in dv.Points) SelectedPoints.Add(p);
+                foreach (var g in dv.DataTypeGroups)
+                    foreach (var p in g.Points)
+                        SelectedPoints.Add(p);
             }
             else if (selection is ChannelViewModel ch)
             {
                 foreach (var d in ch.Devices)
-                    foreach (var p in d.Points) SelectedPoints.Add(p);
+                    foreach (var g in d.DataTypeGroups)
+                        foreach (var p in g.Points)
+                            SelectedPoints.Add(p);
             }
             else if (selection is PointViewModel pv)
             {

@@ -74,7 +74,7 @@
                 <TreeView.Resources>
                     <Style TargetType="TreeViewItem">
                         <EventSetter Event="PreviewMouseRightButtonDown"
-                     Handler="TreeViewItem_PreviewMouseRightButtonDown"/>
+                                     Handler="TreeViewItem_PreviewMouseRightButtonDown"/>
                     </Style>
                     <!-- Channel hiển thị Enable/Disable -->
                     <HierarchicalDataTemplate DataType="{x:Type vm:ChannelViewModel}" ItemsSource="{Binding Devices}">
@@ -82,6 +82,22 @@
                             <CheckBox IsChecked="{Binding Enabled}" VerticalAlignment="Center" Margin="0,0,5,0"/>
                             <TextBlock Text="{Binding DisplayName}" VerticalAlignment="Center"/>
                         </StackPanel>
+
+                        <!-- NEW: Context menu cho Channel -->
+                        <HierarchicalDataTemplate.Resources>
+                            <Style TargetType="TreeViewItem">
+                                <Setter Property="ContextMenu">
+                                    <Setter.Value>
+                                        <ContextMenu>
+                                            <MenuItem Header="Add Device"
+                                                      Command="{Binding DataContext.AddDeviceCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                      CommandParameter="{Binding}" />
+                                        </ContextMenu>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </HierarchicalDataTemplate.Resources>
+                        <!-- END NEW -->
 
                         <!-- Context menu chỉ xuất hiện với channel có Protocol = External -->
                         <HierarchicalDataTemplate.Triggers>
@@ -112,7 +128,12 @@
                     </HierarchicalDataTemplate>
 
                     <!-- Device -->
-                    <HierarchicalDataTemplate DataType="{x:Type vm:DeviceViewModel}" ItemsSource="{Binding Points}">
+                    <HierarchicalDataTemplate DataType="{x:Type vm:DeviceViewModel}" ItemsSource="{Binding DataTypeGroups}">
+                        <TextBlock Text="{Binding Name}" />
+                    </HierarchicalDataTemplate>
+
+                    <!-- DataTypeGroup -->
+                    <HierarchicalDataTemplate DataType="{x:Type vm:DataTypeGroupViewModel}" ItemsSource="{Binding Points}">
                         <TextBlock Text="{Binding Name}" />
                     </HierarchicalDataTemplate>
 
