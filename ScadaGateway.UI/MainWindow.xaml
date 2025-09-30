@@ -4,7 +4,8 @@
         xmlns:vm="clr-namespace:ScadaGateway.UI.ViewModels"
         Title="Xpert Gateway - VI" Height="860" Width="1250"
         Icon="Resources\logo.ico"
-        FontFamily="Segoe UI">
+        FontFamily="Segoe UI"
+        x:Name="MainWin">
 
     <Window.DataContext>
         <vm:MainViewModel />
@@ -76,28 +77,13 @@
                         <EventSetter Event="PreviewMouseRightButtonDown"
                                      Handler="TreeViewItem_PreviewMouseRightButtonDown"/>
                     </Style>
+
                     <!-- Channel hiển thị Enable/Disable -->
                     <HierarchicalDataTemplate DataType="{x:Type vm:ChannelViewModel}" ItemsSource="{Binding Devices}">
                         <StackPanel Orientation="Horizontal">
                             <CheckBox IsChecked="{Binding Enabled}" VerticalAlignment="Center" Margin="0,0,5,0"/>
                             <TextBlock Text="{Binding DisplayName}" VerticalAlignment="Center"/>
                         </StackPanel>
-
-                        <!-- NEW: Context menu cho Channel -->
-                        <HierarchicalDataTemplate.Resources>
-                            <Style TargetType="TreeViewItem">
-                                <Setter Property="ContextMenu">
-                                    <Setter.Value>
-                                        <ContextMenu>
-                                            <MenuItem Header="Add Device"
-                                                      Command="{Binding DataContext.AddDeviceCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                      CommandParameter="{Binding}" />
-                                        </ContextMenu>
-                                    </Setter.Value>
-                                </Setter>
-                            </Style>
-                        </HierarchicalDataTemplate.Resources>
-                        <!-- END NEW -->
 
                         <!-- Context menu chỉ xuất hiện với channel có Protocol = External -->
                         <HierarchicalDataTemplate.Triggers>
@@ -124,27 +110,26 @@
                                     </Setter.Value>
                                 </Setter>
                             </DataTrigger>
+
                             <!-- Context menu cho Modbus Master -->
                             <DataTrigger Binding="{Binding Protocol}" Value="ModbusMaster">
                                 <Setter Property="ContextMenu">
                                     <Setter.Value>
-                                        <ContextMenu 
-                                            DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}">
+                                        <ContextMenu>
                                             <MenuItem Header="Add Device"
-                                                Command="{Binding AddDeviceCommand}"
-                                                CommandParameter="{Binding}" />
+                                                      Command="{Binding DataContext.AddDeviceCommand, Source={x:Reference MainWin}}"
+                                                      CommandParameter="{Binding}" />
                                             <Separator/>
                                             <MenuItem Header="Edit channel"
-                                                Command="{Binding EditChannelCommand}"
-                                                CommandParameter="{Binding}" />
+                                                      Command="{Binding DataContext.EditChannelCommand, Source={x:Reference MainWin}}"
+                                                      CommandParameter="{Binding}" />
                                             <MenuItem Header="Delete channel"
-                                                Command="{Binding DeleteChannelCommand}"
-                                                CommandParameter="{Binding}" />
+                                                      Command="{Binding DataContext.DeleteChannelCommand, Source={x:Reference MainWin}}"
+                                                      CommandParameter="{Binding}" />
                                         </ContextMenu>
                                     </Setter.Value>
                                 </Setter>
                             </DataTrigger>
-
                         </HierarchicalDataTemplate.Triggers>
                     </HierarchicalDataTemplate>
 
