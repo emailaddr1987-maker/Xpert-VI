@@ -4,6 +4,8 @@ using Microsoft.Win32;
 using ScadaGateway.Core.Models;
 using ScadaGateway.Core.Services;
 using ScadaGateway.UI.Dialogs;
+using ScadaGateway.UI.ViewModels.Dialogs;
+using ScadaGateway.UI.Views;
 using System;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -37,6 +39,8 @@ namespace ScadaGateway.UI.ViewModels
         public IRelayCommand ClearLogsCommand { get; }
         public IRelayCommand ExitCommand { get; }
         public IRelayCommand<ChannelViewModel> AddDeviceCommand { get; }
+        public IRelayCommand<ChannelViewModel> EditChannelCommand { get; }
+        public IRelayCommand<ChannelViewModel> DeleteChannelCommand { get; }
         public MainViewModel()
         {
             _driverManager = new DriverManager();
@@ -55,22 +59,66 @@ namespace ScadaGateway.UI.ViewModels
             ExitCommand = new RelayCommand(() => Application.Current.Shutdown());
 
             AddDeviceCommand = new RelayCommand<ChannelViewModel>(OnAddDevice);
+            EditChannelCommand = new RelayCommand<ChannelViewModel>(OnEditChannel);
+            DeleteChannelCommand = new RelayCommand<ChannelViewModel>(OnDeleteChannel);
+        }
+        private void OnDeleteChannel(ChannelViewModel? channelVm)
+        {
+            if (channelVm == null) return;
+
+            if (MessageBox.Show($"Delete channel {channelVm.DisplayName}?", "Confirm", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+            {
+                Channels.Remove(channelVm);
+                _gateway.Channels.Remove(channelVm.Model);
+
+                Logs.Add(new LogEntry { Source = "UI", Content = $"Deleted Channel {channelVm.DisplayName}" });
+            }
+        }
+        private void OnEditChannel(ChannelViewModel ch)
+        {
+            try
+            {
+                if (ch == null) return;
+
+                var dlg = new ModbusChannelDialog(ch.Model);
+                if (dlg.ShowDialog() == true)
+                {
+                    ch.Model.Name = dlg.ChannelName;
+                    ch.Model.Enabled = dlg.Enabled;
+
+                    ch.Model.Config.Clear();
+                    foreach (var kv in dlg.GetConfig())
+                        ch.Model.Config[kv.Key] = kv.Value;
+
+                    ch.RefreshDisplayName();
+                    Logs.Add(new LogEntry { Source = "UI", Content = $"Channel {ch.Model.Name} updated." });
+                }
+            }
+            catch (Exception ex)
+            {
+                Logs.Add(new LogEntry { Source = "UI", Content = "Edit channel error: " + ex.Message });
+            }
         }
         private void OnAddDevice(ChannelViewModel? channelVm)
         {
             if (channelVm == null) return;
-            var dev = new Device { Id = Guid.NewGuid().ToString(), Name = "Device1" };
 
-            // Thêm 4 nhóm mặc định T1..T4
-            dev.DataTypeGroups.Add(new DataTypeGroup { Id = Guid.NewGuid().ToString(), Name = "T1", Function = "Coil" });
-            dev.DataTypeGroups.Add(new DataTypeGroup { Id = Guid.NewGuid().ToString(), Name = "T2", Function = "Discrete" });
-            dev.DataTypeGroups.Add(new DataTypeGroup { Id = Guid.NewGuid().ToString(), Name = "T3", Function = "InputRegister" });
-            dev.DataTypeGroups.Add(new DataTypeGroup { Id = Guid.NewGuid().ToString(), Name = "T4", Function = "HoldingRegister" });
+            var win = new AddDeviceWindow { Owner = Application.Current.MainWindow };
+            if (win.ShowDialog() == true)
+            {
+                var dev = win.Device;
 
-            channelVm.Devices.Add(new DeviceViewModel(dev));
-            channelVm.Model.Devices.Add(dev);
+                // tạo 4 nhóm DataType
+                dev.DataTypeGroups.Add(new DataTypeGroup { Name = "T1 - Coil", Function = "Coil" });
+                dev.DataTypeGroups.Add(new DataTypeGroup { Name = "T2 - Discrete Input", Function = "Discrete" });
+                dev.DataTypeGroups.Add(new DataTypeGroup { Name = "T3 - Input Register", Function = "InputRegister" });
+                dev.DataTypeGroups.Add(new DataTypeGroup { Name = "T4 - Holding Register", Function = "HoldingRegister" });
 
-            Logs.Add(new LogEntry { Source = "UI", Content = $"Added Device to channel {channelVm.DisplayName}" });
+                channelVm.Model.Devices.Add(dev);
+                channelVm.Devices.Add(new DeviceViewModel(dev));
+
+                Logs.Add(new LogEntry { Source = "UI", Content = $"Added Device {dev.Name} to Channel {channelVm.DisplayName}" });
+            }
         }
         private async void OnAddChannel(string? protocol)
         {

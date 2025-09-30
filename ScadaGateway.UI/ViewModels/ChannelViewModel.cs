@@ -29,5 +29,9 @@ namespace ScadaGateway.UI.ViewModels
             foreach (var d in model.Devices)
                 Devices.Add(new DeviceViewModel(d));
         }
+        public void RefreshDisplayName()
+        {
+            OnPropertyChanged(nameof(DisplayName));
+        }
     }
 }

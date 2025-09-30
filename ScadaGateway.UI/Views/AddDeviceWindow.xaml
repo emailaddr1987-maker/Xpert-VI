@@ -1,0 +1,96 @@
+﻿<Window x:Class="ScadaGateway.UI.Views.AddDeviceWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Add device" Height="400" Width="500"
+        WindowStartupLocation="CenterOwner">
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Device name + ID -->
+        <StackPanel Orientation="Horizontal" Grid.Row="0" Margin="0,0,0,5">
+            <Label Content="Device name" Width="120"/>
+            <TextBox x:Name="txtName" Width="200"/>
+        </StackPanel>
+
+        <StackPanel Orientation="Horizontal" Grid.Row="1" Margin="0,0,0,5">
+            <Label Content="Device Id" Width="120"/>
+            <TextBox x:Name="txtId" Width="200"/>
+        </StackPanel>
+
+        <!-- Enabled + Timeout -->
+        <StackPanel Orientation="Horizontal" Grid.Row="2" Margin="0,0,0,5">
+            <CheckBox x:Name="chkEnabled" Content="Enabled" Width="120"/>
+            <Label Content="Timeout (ms)" Width="120"/>
+            <TextBox x:Name="txtTimeout" Width="100" Text="3000"/>
+        </StackPanel>
+
+        <!-- Request Interval -->
+        <GroupBox Header="Request Interval (ms)" Grid.Row="3" Margin="0,5,0,5">
+            <Grid Margin="5">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="150"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <Label Grid.Row="0" Grid.Column="0" Content="Coil"/>
+                <TextBox x:Name="txtIntervalCoil" Grid.Row="0" Grid.Column="1" Text="1000"/>
+
+                <Label Grid.Row="1" Grid.Column="0" Content="Discrete input"/>
+                <TextBox x:Name="txtIntervalDiscrete" Grid.Row="1" Grid.Column="1" Text="1000"/>
+
+                <Label Grid.Row="2" Grid.Column="0" Content="Holding register"/>
+                <TextBox x:Name="txtIntervalHolding" Grid.Row="2" Grid.Column="1" Text="1000"/>
+
+                <Label Grid.Row="3" Grid.Column="0" Content="Input register"/>
+                <TextBox x:Name="txtIntervalInput" Grid.Row="3" Grid.Column="1" Text="1000"/>
+            </Grid>
+        </GroupBox>
+
+        <!-- Max numbers -->
+        <GroupBox Header="Max number each request" Grid.Row="4" Margin="0,5,0,5">
+            <Grid Margin="5">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="150"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <Label Grid.Row="0" Grid.Column="0" Content="Coil"/>
+                <TextBox x:Name="txtMaxCoil" Grid.Row="0" Grid.Column="1" Text="32"/>
+
+                <Label Grid.Row="1" Grid.Column="0" Content="Discrete input"/>
+                <TextBox x:Name="txtMaxDiscrete" Grid.Row="1" Grid.Column="1" Text="32"/>
+
+                <Label Grid.Row="2" Grid.Column="0" Content="Holding register"/>
+                <TextBox x:Name="txtMaxHolding" Grid.Row="2" Grid.Column="1" Text="32"/>
+
+                <Label Grid.Row="3" Grid.Column="0" Content="Input register"/>
+                <TextBox x:Name="txtMaxInput" Grid.Row="3" Grid.Column="1" Text="32"/>
+            </Grid>
+        </GroupBox>
+
+        <!-- Buttons -->
+        <StackPanel Orientation="Horizontal" Grid.Row="5" HorizontalAlignment="Right" Margin="0,10,0,0">
+            <Button Content="OK" Width="80" Margin="5" IsDefault="True" Click="Ok_Click"/>
+            <Button Content="Cancel" Width="80" Margin="5" IsCancel="True"/>
+        </StackPanel>
+    </Grid>
+</Window>
