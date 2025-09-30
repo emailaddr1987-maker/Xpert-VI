@@ -1,0 +1,32 @@
+﻿<Window x:Class="ScadaGateway.UI.Views.GatewaySettingDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Gateway Settings" Height="200" Width="400"
+        WindowStartupLocation="CenterOwner" ResizeMode="NoResize">
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Orientation="Horizontal" Margin="0 5">
+            <TextBlock Text="Gateway Name:" Width="120"/>
+            <TextBox Width="200" Text="{Binding GatewayName, UpdateSourceTrigger=PropertyChanged}"/>
+        </StackPanel>
+
+        <StackPanel Orientation="Horizontal" Margin="0 5" Grid.Row="1">
+            <TextBlock Text="Polling Interval (ms):" Width="120"/>
+            <TextBox Width="200" Text="{Binding DefaultPollingInterval, UpdateSourceTrigger=PropertyChanged}"/>
+        </StackPanel>
+
+        <CheckBox Content="Auto Start" Grid.Row="2"
+                  IsChecked="{Binding AutoStart}"/>
+
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Grid.Row="3" Margin="0 10 0 0">
+            <Button Content="OK" Width="80" Margin="5" IsDefault="True" Click="OnOk"/>
+            <Button Content="Cancel" Width="80" Margin="5" IsCancel="True"/>
+        </StackPanel>
+    </Grid>
+</Window>

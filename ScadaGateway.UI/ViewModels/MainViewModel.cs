@@ -11,6 +11,9 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Windows;
+using System.Collections.Specialized;
+using System.Text.Json;
+
 
 namespace ScadaGateway.UI.ViewModels
 {
@@ -32,7 +35,13 @@ namespace ScadaGateway.UI.ViewModels
         private readonly MappingEngine _mapping;
         private readonly GatewayService _gateway;
         private readonly PersistenceService _persistence;
-
+        private GatewaySetting _settings = new GatewaySetting();
+        // thêm property để bật/tắt auto scroll
+        public bool AutoScrollLogs { get; set; } = true;
+        public IRelayCommand GatewaySettingCommand { get; }
+        public IRelayCommand SaveLogsCommand { get; }
+        public IRelayCommand ShowLicenceCommand { get; }
+        public IRelayCommand ShowAboutCommand { get; }
         public IRelayCommand<string> AddChannelCommand { get; }
         public IRelayCommand NewExternalChannelCommand { get; }
         public IRelayCommand SaveProjectCommand { get; }
@@ -63,8 +72,66 @@ namespace ScadaGateway.UI.ViewModels
             AddDeviceCommand = new RelayCommand<ChannelViewModel>(OnAddDevice);
             EditChannelCommand = new RelayCommand<ChannelViewModel>(OnEditChannel);
             DeleteChannelCommand = new RelayCommand<ChannelViewModel>(OnDeleteChannel);
+
+            GatewaySettingCommand = new RelayCommand(OnGatewaySetting);
+            SaveLogsCommand = new RelayCommand(OnSaveLogs);
+            ShowLicenceCommand = new RelayCommand(OnShowLicence);
+            ShowAboutCommand = new RelayCommand(OnShowAbout);
+
+            Logs.CollectionChanged += Logs_CollectionChanged;
+        }
+        // Auto Scroll
+        private void Logs_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            if (AutoScrollLogs && e.Action == NotifyCollectionChangedAction.Add)
+            {
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    // giả sử bạn đặt tên ListBox là LogListBox trong XAML
+                    if (Application.Current.MainWindow is MainWindow main && main.LogListBox.Items.Count > 0)
+                        main.LogListBox.ScrollIntoView(main.LogListBox.Items[^1]);
+                });
+            }
         }
 
+        private void OnGatewaySetting()
+        {
+            var dlg = new GatewaySettingDialog { Owner = Application.Current.MainWindow };
+            dlg.DataContext = _settings;
+            if (dlg.ShowDialog() == true)
+            {
+                File.WriteAllText("gateway-settings.json", JsonSerializer.Serialize(_settings));
+                Logs.Add(new LogEntry { Source = "UI", Content = "Gateway settings updated." });
+            }
+        }
+
+        private void OnSaveLogs()
+        {
+            var dlg = new Microsoft.Win32.SaveFileDialog
+            {
+                Title = "Save Logs",
+                Filter = "Text Files (*.txt)|*.txt",
+                FileName = $"logs_{DateTime.Now:yyyyMMdd_HHmmss}.txt"
+            };
+            if (dlg.ShowDialog() == true)
+            {
+                File.WriteAllLines(dlg.FileName,
+                    Logs.Select(l => $"[{l.Time:yyyy-MM-dd HH:mm:ss}] {l.Source}: {l.Content}"));
+                Logs.Add(new LogEntry { Source = "UI", Content = $"Logs saved to {dlg.FileName}" });
+            }
+        }
+
+        private void OnShowLicence()
+        {
+            var dlg = new LicenceWindow { Owner = Application.Current.MainWindow };
+            dlg.ShowDialog();
+        }
+
+        private void OnShowAbout()
+        {
+            var dlg = new AboutWindow { Owner = Application.Current.MainWindow };
+            dlg.ShowDialog();
+        }
         // ---------- Channel CRUD ----------
 
         private void OnDeleteChannel(ChannelViewModel? channelVm)
@@ -101,6 +168,9 @@ namespace ScadaGateway.UI.ViewModels
 
                     ch.Model.Name = newName;
                     ch.Model.Enabled = dlg.Enabled;
+                    // đồng bộ sang ViewModel
+                    ch.Name = newName;
+                    ch.Enabled = dlg.Enabled;
 
                     ch.Model.Config.Clear();
                     foreach (var kv in dlg.GetConfig())

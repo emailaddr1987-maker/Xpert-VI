@@ -13,7 +13,7 @@ namespace ScadaGateway.UI.ViewModels
         public bool Enabled { get; set; }
 
         // ✅ Bổ sung hiển thị trạng thái Enable/Disable
-        public string DisplayName => $"{Name} ({Protocol}) {(Enabled ? "Enable" : "Disable")}";
+        public string DisplayName => $"{Name} ({Protocol}) ({(Enabled ? "Enable" : "Disable")})";
 
         public ObservableCollection<DeviceViewModel> Devices { get; } = new();
 

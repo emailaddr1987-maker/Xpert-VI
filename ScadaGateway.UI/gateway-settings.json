@@ -1,0 +1,5 @@
+{
+  "GatewayName": "XpertGateway",
+  "DefaultPollingInterval": 1000,
+  "AutoStart": true
+}

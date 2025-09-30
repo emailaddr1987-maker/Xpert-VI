@@ -38,20 +38,22 @@
                 <Separator/>
                 <MenuItem Header="Exit" Command="{Binding ExitCommand}" InputGestureText="Ctrl+X"/>
             </MenuItem>
-            <MenuItem Header="Edit">
+            <MenuItem Header="_Edit">
                 <MenuItem Header="Gateway Setting" Command="{Binding GatewaySettingCommand}"/>
             </MenuItem>
-            <MenuItem Header="View"/>
-            <MenuItem Header="Logs">
-                <MenuItem Header="Auto Scroll log"/>
+            <MenuItem Header="_View"/>
+            <MenuItem Header="_Logs">
+                <MenuItem>
+                    <CheckBox Content="Auto Scroll Log" IsChecked="{Binding AutoScrollLogs, Mode=TwoWay}"/>
+                </MenuItem>
                 <MenuItem Header="Clear log" Command="{Binding ClearLogsCommand}"/>
-                <MenuItem Header="Save Log to File" Command="{Binding SaveLogCommand}"/>
+                <MenuItem Header="Save Log to File" Command="{Binding SaveLogsCommand}"/>
                 <MenuItem Header="Configure client log"/>
                 <MenuItem Header="Configure server log"/>
             </MenuItem>
-            <MenuItem Header="Help">
-                <MenuItem Header="Licence information" Command="{Binding LicenceCommand}"/>
-                <MenuItem Header="About" Command="{Binding AboutCommand}"/>
+            <MenuItem Header="_Help">
+                <MenuItem Header="Licence information" Command="{Binding ShowLicenceCommand}"/>
+                <MenuItem Header="About" Command="{Binding ShowAboutCommand}"/>
             </MenuItem>
         </Menu>
 
@@ -227,7 +229,7 @@
                           Background="LightGray"/>
 
             <!-- Logs -->
-            <DataGrid Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3"
+            <DataGrid x:Name="LogListBox" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3"
                       ItemsSource="{Binding Logs}" AutoGenerateColumns="False" Margin="5">
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Time" Binding="{Binding Time, StringFormat=dd/MM/yyyy HH:mm:ss.fff}" Width="200"/>

@@ -1,0 +1,14 @@
+﻿<Window x:Class="ScadaGateway.UI.Views.AboutWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="About" Height="200" Width="400"
+        WindowStartupLocation="CenterOwner">
+    <StackPanel Margin="10">
+        <TextBlock x:Name="AppNameText" FontSize="16" FontWeight="Bold"/>
+        <TextBlock x:Name="VersionText" Margin="0 5"/>
+        <TextBlock Text="© 2025 YourCompany"/>
+        <TextBlock Text="GitHub: https://github.com/emailaddr1987-maker/Xpert-VI"
+                   Foreground="Blue" TextDecorations="Underline"/>
+        <Button Content="OK" Width="80" Margin="0 10 0 0" HorizontalAlignment="Right" IsDefault="True" IsCancel="True"/>
+    </StackPanel>
+</Window>

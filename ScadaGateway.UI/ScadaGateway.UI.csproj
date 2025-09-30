@@ -23,6 +23,8 @@
 	<None Include="$(UserProfile)\.nuget\packages\system.io.ports\8.0.0\runtimes\win\lib\net8.0\System.IO.Ports.dll">
 		<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	</None>
+	<None Include="LICENCE.txt" CopyToOutputDirectory="Always" />
+	<None Include="gateway-settings.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <PropertyGroup>
