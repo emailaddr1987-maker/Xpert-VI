@@ -9,6 +9,7 @@ using ScadaGateway.UI.Views;
 using System;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
 using System.Windows;
 
 namespace ScadaGateway.UI.ViewModels
@@ -41,6 +42,7 @@ namespace ScadaGateway.UI.ViewModels
         public IRelayCommand<ChannelViewModel> AddDeviceCommand { get; }
         public IRelayCommand<ChannelViewModel> EditChannelCommand { get; }
         public IRelayCommand<ChannelViewModel> DeleteChannelCommand { get; }
+
         public MainViewModel()
         {
             _driverManager = new DriverManager();
@@ -62,6 +64,9 @@ namespace ScadaGateway.UI.ViewModels
             EditChannelCommand = new RelayCommand<ChannelViewModel>(OnEditChannel);
             DeleteChannelCommand = new RelayCommand<ChannelViewModel>(OnDeleteChannel);
         }
+
+        // ---------- Channel CRUD ----------
+
         private void OnDeleteChannel(ChannelViewModel? channelVm)
         {
             if (channelVm == null) return;
@@ -74,7 +79,8 @@ namespace ScadaGateway.UI.ViewModels
                 Logs.Add(new LogEntry { Source = "UI", Content = $"Deleted Channel {channelVm.DisplayName}" });
             }
         }
-        private void OnEditChannel(ChannelViewModel ch)
+
+        private void OnEditChannel(ChannelViewModel? ch)
         {
             try
             {
@@ -83,7 +89,17 @@ namespace ScadaGateway.UI.ViewModels
                 var dlg = new ModbusChannelDialog(ch.Model);
                 if (dlg.ShowDialog() == true)
                 {
-                    ch.Model.Name = dlg.ChannelName;
+                    var newName = (dlg.ChannelName ?? ch.Model.Name).Trim();
+
+                    // kiểm tra tên kênh mới có trùng với kênh khác không
+                    if (Channels.Any(c => !ReferenceEquals(c, ch) &&
+                                          string.Equals(c.Model.Name, newName, StringComparison.OrdinalIgnoreCase)))
+                    {
+                        MessageBox.Show($"A channel named '{newName}' already exists.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        return;
+                    }
+
+                    ch.Model.Name = newName;
                     ch.Model.Enabled = dlg.Enabled;
 
                     ch.Model.Config.Clear();
@@ -99,6 +115,7 @@ namespace ScadaGateway.UI.ViewModels
                 Logs.Add(new LogEntry { Source = "UI", Content = "Edit channel error: " + ex.Message });
             }
         }
+
         private void OnAddDevice(ChannelViewModel? channelVm)
         {
             if (channelVm == null) return;
@@ -106,23 +123,51 @@ namespace ScadaGateway.UI.ViewModels
             var win = new AddDeviceWindow { Owner = Application.Current.MainWindow };
             if (win.ShowDialog() == true)
             {
-                var dev = win.Device;
+                var dev = win.Device ?? new Device();
+                if (dev == null) return;
+                // normalize name/id
+                dev.Name = (dev.Name ?? "").Trim();
+                if (string.IsNullOrEmpty(dev.Name))
+                    dev.Name = $"Device{channelVm.Devices.Count + 1}";
 
-                // tạo 4 nhóm DataType
-                dev.DataTypeGroups.Add(new DataTypeGroup { Name = "T1 - Coil", Function = "Coil" });
-                dev.DataTypeGroups.Add(new DataTypeGroup { Name = "T2 - Discrete Input", Function = "Discrete" });
-                dev.DataTypeGroups.Add(new DataTypeGroup { Name = "T3 - Input Register", Function = "InputRegister" });
-                dev.DataTypeGroups.Add(new DataTypeGroup { Name = "T4 - Holding Register", Function = "HoldingRegister" });
+                if (string.IsNullOrEmpty(dev.Id))
+                    dev.Id = Guid.NewGuid().ToString("N").Substring(0, 8);
 
+                // 1) kiểm tra trùng Name trong cùng channel
+                if (channelVm.Devices.Any(d => string.Equals(d.Name, dev.Name, StringComparison.OrdinalIgnoreCase)))
+                {
+                    MessageBox.Show($"A device named '{dev.Name}' already exists in channel '{channelVm.DisplayName}'.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+
+                // 2) kiểm tra trùng Id trong cùng channel
+                if (channelVm.Devices.Any(d => string.Equals(d.Model.Id, dev.Id, StringComparison.OrdinalIgnoreCase)))
+                {
+                    MessageBox.Show($"A device with Id '{dev.Id}' already exists in channel '{channelVm.DisplayName}'.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+
+                // nếu Device chưa có DataTypeGroups (ví dụ dialog trả về device trống), tạo 4 nhóm mặc định
+               
+                if (dev.DataTypeGroups == null || dev.DataTypeGroups.Count == 0)
+                {
+                    dev.DataTypeGroups.Add(new DataTypeGroup { Name = "T1 - Coil", Function = "Coil" });
+                    dev.DataTypeGroups.Add(new DataTypeGroup { Name = "T2 - Discrete Input", Function = "Discrete" });
+                    dev.DataTypeGroups.Add(new DataTypeGroup { Name = "T3 - Input Register", Function = "InputRegister" });
+                    dev.DataTypeGroups.Add(new DataTypeGroup { Name = "T4 - Holding Register", Function = "HoldingRegister" });
+                }
+                // Thêm vào model và viewmodel
                 channelVm.Model.Devices.Add(dev);
                 channelVm.Devices.Add(new DeviceViewModel(dev));
 
                 Logs.Add(new LogEntry { Source = "UI", Content = $"Added Device {dev.Name} to Channel {channelVm.DisplayName}" });
             }
         }
+
         private async void OnAddChannel(string? protocol)
         {
             if (string.IsNullOrEmpty(protocol)) return;
+
             try
             {
                 var dlg = ChannelDialogFactory.Create(protocol);
@@ -142,21 +187,36 @@ namespace ScadaGateway.UI.ViewModels
                 if (result != true) return; // user cancel
 
                 var cfg = dlg.GetConfig();
-                var name = dlg.ChannelName ?? protocol;
+                var name = (dlg.ChannelName ?? protocol).Trim();
+
+                // kiểm tra không cho phép trùng tên channel
+                if (Channels.Any(c => string.Equals(c.Model.Name, name, StringComparison.OrdinalIgnoreCase)))
+                {
+                    MessageBox.Show($"A channel named '{name}' already exists.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+
                 var id2 = Guid.NewGuid().ToString("N").Substring(0, 8);
                 var ch = _gateway.CreateChannel(protocol, id2, name, cfg);
+
+                // gán Enabled theo dialog
+                try { ch.Enabled = dlg.Enabled; } catch { /* ignore if not supported */ }
+
                 Channels.Add(new ChannelViewModel(ch));
                 await _gateway.StartChannelAsync(ch);
+
+                // refresh display name (ensure VM shows Enable/Disable)
+                Channels.Last().RefreshDisplayName();
 
                 Logs.Add(new LogEntry { Source = "UI", Content = $"Channel {ch.Name} ({ch.Protocol}) added & started." });
             }
             catch (Exception ex)
             {
                 Logs.Add(new LogEntry { Source = "UI", Content = "Add channel error: " + ex.ToString() });
-                //Logs.Add(new LogEntry { Source = "UI", Content = "Add channel error: " + ex.Message });
             }
         }
 
+        // ---------- Save / Load ----------
 
         private void OnSaveProject()
         {
@@ -220,6 +280,7 @@ namespace ScadaGateway.UI.ViewModels
             }
         }
 
+        // Called from TreeView selection changed
         public void OnSelectedTreeItemChanged(object? selection)
         {
             SelectedPoints.Clear();
