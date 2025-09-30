@@ -124,6 +124,23 @@
                                     </Setter.Value>
                                 </Setter>
                             </DataTrigger>
+                            <!-- Context menu cho Modbus Master -->
+                            <DataTrigger Binding="{Binding Protocol}" Value="ModbusMaster">
+                                <Setter Property="ContextMenu">
+                                    <Setter.Value>
+                                        <ContextMenu DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
+                                            <MenuItem Header="Add Device"
+                              Command="{Binding DataContext.AddDeviceCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                              CommandParameter="{Binding}" />
+                                            <Separator/>
+                                            <MenuItem Header="Edit channel"
+                              Command="{Binding DataContext.EditChannelCommand, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                            <MenuItem Header="Delete channel"
+                              Command="{Binding DataContext.DeleteChannelCommand, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                        </ContextMenu>
+                                    </Setter.Value>
+                                </Setter>
+                            </DataTrigger>
                         </HierarchicalDataTemplate.Triggers>
                     </HierarchicalDataTemplate>
 
