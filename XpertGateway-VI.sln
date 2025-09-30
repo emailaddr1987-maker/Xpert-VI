@@ -3,21 +3,18 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScadaGateway.Core", "ScadaGateway.Core\ScadaGateway.Core.csproj", "{F6792D36-CF60-4E13-AC16-A937ED15B776}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ScadaGateway.Core", "ScadaGateway.Core\ScadaGateway.Core.csproj", "{F6792D36-CF60-4E13-AC16-A937ED15B776}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScadaGateway.Drivers.Mock", "ScadaGateway.Drivers.Mock\ScadaGateway.Drivers.Mock.csproj", "{1BA88E1A-AC7A-49F0-A2D6-359EE4670F0D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ScadaGateway.Drivers.Mock", "ScadaGateway.Drivers.Mock\ScadaGateway.Drivers.Mock.csproj", "{1BA88E1A-AC7A-49F0-A2D6-359EE4670F0D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScadaGateway.UI", "ScadaGateway.UI\ScadaGateway.UI.csproj", "{BE3564CE-9FD6-49DE-B807-68D92576132E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ScadaGateway.UI", "ScadaGateway.UI\ScadaGateway.UI.csproj", "{BE3564CE-9FD6-49DE-B807-68D92576132E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScadaGateway.Drivers.Modbus", "ScadaGateway.Drivers.Modbus\ScadaGateway.Drivers.Modbus.csproj", "{3E9C2844-E35D-4D09-AB1A-C3369C846408}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ScadaGateway.Drivers.Modbus", "ScadaGateway.Drivers.Modbus\ScadaGateway.Drivers.Modbus.csproj", "{3E9C2844-E35D-4D09-AB1A-C3369C846408}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{F6792D36-CF60-4E13-AC16-A937ED15B776}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -36,5 +33,8 @@ Global
 		{3E9C2844-E35D-4D09-AB1A-C3369C846408}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3E9C2844-E35D-4D09-AB1A-C3369C846408}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3E9C2844-E35D-4D09-AB1A-C3369C846408}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
 	EndGlobalSection
 EndGlobal

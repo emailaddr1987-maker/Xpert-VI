@@ -40,6 +40,20 @@ namespace ScadaGateway.Core.Services
                     {
                         Id = d.Id,
                         Name = d.Name,
+                        // ✅ Thêm DataTypeGroups
+                        DataTypeGroups = d.DataTypeGroups.Select(g => new DataTypeGroupDto
+                        {
+                            Name = g.Name,
+                            Function = g.Function,
+                            Points = g.Points.Select(p => new PointDto
+                            {
+                                Id = p.Id,
+                                Name = p.Name,
+                                DataType = p.DataType.ToString(),
+                                Meta = p.Meta.Select(m => new KeyValuePairDto { Key = m.Key, Value = m.Value }).ToList()
+                            }).ToList()
+                        }).ToList(),
+                        // vẫn giữ lại Points nếu bạn dùng trực tiếp
                         Points = d.Points.Select(p => new PointDto
                         {
                             Id = p.Id,
@@ -71,7 +85,6 @@ namespace ScadaGateway.Core.Services
                 Enabled = ch.Enabled,
             }).ToList();
 
-            // Populate collections
             foreach (var ch in channels)
             {
                 var chDto = dto.Channels.First(c => c.Id == ch.Id);
@@ -82,6 +95,26 @@ namespace ScadaGateway.Core.Services
                 foreach (var d in chDto.Devices)
                 {
                     var dev = new Device { Id = d.Id, Name = d.Name };
+
+                    // ✅ Load DataTypeGroups
+                    foreach (var gDto in d.DataTypeGroups)
+                    {
+                        var group = new DataTypeGroup { Name = gDto.Name, Function = gDto.Function };
+                        foreach (var p in gDto.Points)
+                        {
+                            var pt = new Point
+                            {
+                                Id = p.Id,
+                                Name = p.Name,
+                                DataType = Enum.TryParse<PointDataType>(p.DataType, out var dt) ? dt : PointDataType.String,
+                                Meta = p.Meta.ToDictionary(m => m.Key, m => m.Value)
+                            };
+                            group.Points.Add(pt);
+                        }
+                        dev.DataTypeGroups.Add(group);
+                    }
+
+                    // giữ lại Points nếu dùng trực tiếp
                     foreach (var p in d.Points)
                     {
                         var pt = new Point
@@ -93,6 +126,7 @@ namespace ScadaGateway.Core.Services
                         };
                         dev.Points.Add(pt);
                     }
+
                     ch.Devices.Add(dev);
                 }
             }
