@@ -135,18 +135,13 @@
                     <!-- Device -->
                     <HierarchicalDataTemplate DataType="{x:Type vm:DeviceViewModel}" ItemsSource="{Binding DataTypeGroups}">
                         <TextBlock Text="{Binding Name}" />
-
                         <HierarchicalDataTemplate.ItemContainerStyle>
                             <Style TargetType="TreeViewItem">
                                 <Setter Property="ContextMenu">
                                     <Setter.Value>
                                         <ContextMenu>
-                                            <MenuItem Header="Edit Device"
-                                  Command="{Binding DataContext.EditDeviceCommand, Source={x:Reference MainWin}}"
-                                  CommandParameter="{Binding}" />
-                                            <MenuItem Header="Delete Device"
-                                  Command="{Binding DataContext.DeleteDeviceCommand, Source={x:Reference MainWin}}"
-                                  CommandParameter="{Binding}" />
+                                            <MenuItem Header="Edit Device" Command="{Binding DataContext.EditDeviceCommand, Source={x:Reference MainWin}}" CommandParameter="{Binding}" />
+                                            <MenuItem Header="Delete Device" Command="{Binding DataContext.DeleteDeviceCommand, Source={x:Reference MainWin}}" CommandParameter="{Binding}" />
                                         </ContextMenu>
                                     </Setter.Value>
                                 </Setter>
