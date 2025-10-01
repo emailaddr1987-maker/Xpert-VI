@@ -1,11 +1,13 @@
 ﻿using System.Windows;
+using System.Xml.Linq;
 using ScadaGateway.Core.Models;
 
 namespace ScadaGateway.UI.Views
 {
     public partial class AddDeviceWindow : Window
     {
-        public Device Device { get; private set; }
+        // Cho phép MainViewModel gán và đọc lại Device
+        public Device Device { get; set; }
 
         public AddDeviceWindow()
         {
@@ -15,6 +17,7 @@ namespace ScadaGateway.UI.Views
 
         private void Ok_Click(object sender, RoutedEventArgs e)
         {
+            // cập nhật lại Device từ UI
             Device.Name = txtName.Text;
             Device.Id = txtId.Text;
             Device.Enabled = chkEnabled.IsChecked ?? false;

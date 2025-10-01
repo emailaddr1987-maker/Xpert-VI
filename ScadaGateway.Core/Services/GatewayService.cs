@@ -62,5 +62,10 @@ namespace ScadaGateway.Core.Services
 
         public Point? LookupPoint(string id) => Channels.SelectMany(c => c.Devices).SelectMany(d => d.Points).FirstOrDefault(p => p.Id == id);
         public void WritePoint(Point p, object? value) => p.SetValue(value);
+        private void OnChannelConnectionChanged(Channel ch, bool connected)
+        {
+            ch.SetConnectionState(connected);
+            // raise event → UI sẽ cập nhật PointViewModel.Value
+        }
     }
 }

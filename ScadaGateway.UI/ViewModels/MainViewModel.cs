@@ -51,6 +51,8 @@ namespace ScadaGateway.UI.ViewModels
         public IRelayCommand<ChannelViewModel> AddDeviceCommand { get; }
         public IRelayCommand<ChannelViewModel> EditChannelCommand { get; }
         public IRelayCommand<ChannelViewModel> DeleteChannelCommand { get; }
+        public IRelayCommand<DeviceViewModel> EditDeviceCommand { get; }
+        public IRelayCommand<DeviceViewModel> DeleteDeviceCommand { get; }
 
         public MainViewModel()
         {
@@ -72,6 +74,8 @@ namespace ScadaGateway.UI.ViewModels
             AddDeviceCommand = new RelayCommand<ChannelViewModel>(OnAddDevice);
             EditChannelCommand = new RelayCommand<ChannelViewModel>(OnEditChannel);
             DeleteChannelCommand = new RelayCommand<ChannelViewModel>(OnDeleteChannel);
+            EditDeviceCommand = new RelayCommand<DeviceViewModel>(OnEditDevice);
+            DeleteDeviceCommand = new RelayCommand<DeviceViewModel>(OnDeleteDevice);
 
             GatewaySettingCommand = new RelayCommand(OnGatewaySetting);
             SaveLogsCommand = new RelayCommand(OnSaveLogs);
@@ -79,6 +83,35 @@ namespace ScadaGateway.UI.ViewModels
             ShowAboutCommand = new RelayCommand(OnShowAbout);
 
             Logs.CollectionChanged += Logs_CollectionChanged;
+        }
+        private void OnEditDevice(DeviceViewModel? devVm)
+        {
+            if (devVm == null) return;
+
+            var win = new AddDeviceWindow { Owner = Application.Current.MainWindow };
+            win.Device = devVm.Model; // truyền lại model hiện tại để binding
+            if (win.ShowDialog() == true)
+            {
+                // win.Device đã được cập nhật
+                devVm.Refresh(); // method bạn viết thêm trong DeviceViewModel để raise OnPropertyChanged
+                Logs.Add(new LogEntry { Source = "UI", Content = $"Edited Device {devVm.Name}" });
+            }
+        }
+
+        private void OnDeleteDevice(DeviceViewModel? devVm)
+        {
+            if (devVm == null) return;
+
+            if (MessageBox.Show($"Delete device {devVm.Name}?", "Confirm", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+            {
+                var channel = Channels.FirstOrDefault(ch => ch.Devices.Contains(devVm));
+                if (channel != null)
+                {
+                    channel.Model.Devices.Remove(devVm.Model);
+                    channel.Devices.Remove(devVm);
+                    Logs.Add(new LogEntry { Source = "UI", Content = $"Deleted Device {devVm.Name} from {channel.DisplayName}" });
+                }
+            }
         }
         // Auto Scroll
         private void Logs_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
@@ -355,14 +388,21 @@ namespace ScadaGateway.UI.ViewModels
         {
             SelectedPoints.Clear();
 
+            
             if (selection is DeviceViewModel dv)
             {
+                foreach (var p in dv.Model.StatusPoints)
+                    SelectedPoints.Add(new PointViewModel(p));
+
                 foreach (var g in dv.DataTypeGroups)
                     foreach (var p in g.Points)
                         SelectedPoints.Add(p);
             }
             else if (selection is ChannelViewModel ch)
             {
+                foreach (var p in ch.Model.StatusPoints)
+                    SelectedPoints.Add(new PointViewModel(p));
+
                 foreach (var d in ch.Devices)
                     foreach (var g in d.DataTypeGroups)
                         foreach (var p in g.Points)
@@ -372,6 +412,7 @@ namespace ScadaGateway.UI.ViewModels
             {
                 SelectedPoints.Add(pv);
             }
+
         }
     }
 }
