@@ -251,7 +251,7 @@ namespace ScadaGateway.UI.ViewModels
                 }
 
                 // nếu Device chưa có DataTypeGroups (ví dụ dialog trả về device trống), tạo 4 nhóm mặc định
-               
+
                 if (dev.DataTypeGroups == null || dev.DataTypeGroups.Count == 0)
                 {
                     dev.DataTypeGroups.Add(new DataTypeGroup { Name = "T1 - Coil", Function = "Coil" });
@@ -388,7 +388,7 @@ namespace ScadaGateway.UI.ViewModels
         {
             SelectedPoints.Clear();
 
-            
+
             if (selection is DeviceViewModel dv)
             {
                 foreach (var p in dv.Model.StatusPoints)
